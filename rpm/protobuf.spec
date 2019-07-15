@@ -1,15 +1,18 @@
 Summary:        Protocol Buffers - Google's data interchange format
 Name:           protobuf
-Version:        2.5.0
-Release:        5%{?dist}
+Version:        3.8.0
+Release:        1%{?dist}
 License:        BSD
+URL:            https://github.com/protocolbuffers/protobuf
+Source0:        %{name}-%{version}.tar.gz
 Group:          Development/Libraries
-Source:         http://protobuf.googlecode.com/files/protobuf-%{version}.tar.bz2
-Source1:        ftdetect-proto.vim
-Patch3:         0001-Add-generic-GCC-support-for-atomic-operations.patch
-Patch4:         protobuf-2.5.0-makefile.patch
-URL:            http://code.google.com/p/protobuf/
-BuildRequires:  automake autoconf libtool pkgconfig zlib-devel
+
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  gcc-c++
+BuildRequires:  libtool
+BuildRequires:  pkgconfig
+BuildRequires:  zlib-devel
 
 %description
 Protocol Buffers are a way of encoding structured data in an efficient
@@ -25,36 +28,33 @@ variety of languages. You can even update your data structure without
 breaking deployed programs that are compiled against the "old" format.
 
 %package compiler
-Summary: Protocol Buffers compiler
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:        Protocol Buffers compiler
+Requires:       %{name} = %{version}-%{release}
 
 %description compiler
 This package contains Protocol Buffers compiler for all programming
 languages
 
 %package devel
-Summary: Protocol Buffers C++ headers and libraries
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
-Requires: %{name}-compiler = %{version}-%{release}
-Requires: pkgconfig
+Summary:        Protocol Buffers C++ headers and libraries
+Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}-compiler = %{version}-%{release}
+Requires:       zlib-devel
+Requires:       pkgconfig
 
 %description devel
 This package contains Protocol Buffers compiler for all languages and
 C++ headers and libraries
 
 %package static
-Summary: Static development files for %{name}
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:        Static development files for %{name}
+Requires:       %{name}-devel = %{version}-%{release}
 
 %description static
 Static libraries for Protocol Buffers
 
 %package lite
-Summary: Protocol Buffers LITE_RUNTIME libraries
-Group: Development/Libraries
+Summary:        Protocol Buffers LITE_RUNTIME libraries
 
 %description lite
 Protocol Buffers built with optimize_for = LITE_RUNTIME.
@@ -64,9 +64,9 @@ which only depends libprotobuf-lite, which is much smaller than libprotobuf but
 lacks descriptors, reflection, and some other features.
 
 %package lite-devel
-Summary: Protocol Buffers LITE_RUNTIME development libraries
-Requires: %{name}-devel = %{version}-%{release}
-Requires: %{name}-lite = %{version}-%{release}
+Summary:        Protocol Buffers LITE_RUNTIME development libraries
+Requires:       %{name}-devel = %{version}-%{release}
+Requires:       %{name}-lite = %{version}-%{release}
 
 %description lite-devel
 This package contains development libraries built with
@@ -77,9 +77,8 @@ which only depends libprotobuf-lite, which is much smaller than libprotobuf but
 lacks descriptors, reflection, and some other features.
 
 %package lite-static
-Summary: Static development files for %{name}-lite
-Group: Development/Libraries
-Requires: %{name}-devel = %{version}-%{release}
+Summary:        Static development files for %{name}-lite
+Requires:       %{name}-devel = %{version}-%{release}
 
 %description lite-static
 This package contains static development libraries built with
@@ -89,21 +88,9 @@ The "optimize_for = LITE_RUNTIME" option causes the compiler to generate code
 which only depends libprotobuf-lite, which is much smaller than libprotobuf but
 lacks descriptors, reflection, and some other features.
 
-%package vim
-Summary: Vim syntax highlighting for Google Protocol Buffers descriptions
-Group: Development/Libraries
-Requires: vim-enhanced
-
-%description vim
-This package contains syntax highlighting for Google Protocol Buffers
-descriptions in Vim editor
-
 %prep
-%setup -q -n %{name}-%{version}/%{name}
+%autosetup -n %{name}-%{version}/%{name}
 chmod 644 examples/*
-
-%patch3 -p1 -b .generic-atomics
-%patch4 -p1 -b .generic-atomics-makefile
 
 %build
 iconv -f iso8859-1 -t utf-8 CONTRIBUTORS.txt > CONTRIBUTORS.txt.utf8
@@ -114,16 +101,10 @@ export PTHREAD_LIBS="-lpthread"
 
 make %{?_smp_mflags}
 
-%check
-#make %{?_smp_mflags} check
-
 %install
 rm -rf %{buildroot}
 make %{?_smp_mflags} install DESTDIR=%{buildroot} STRIPBINARIES=no INSTALL="%{__install} -p" CPPROG="cp -p"
 find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
-
-install -p -m 644 -D %{SOURCE1} %{buildroot}%{_datadir}/vim/vimfiles/ftdetect/proto.vim
-install -p -m 644 -D editors/proto.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax/proto.vim
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -136,14 +117,13 @@ install -p -m 644 -D editors/proto.vim %{buildroot}%{_datadir}/vim/vimfiles/synt
 
 %files
 %defattr(-, root, root, -)
+%license LICENSE
 %{_libdir}/libprotobuf.so.*
-%doc CHANGES.txt CONTRIBUTORS.txt COPYING.txt README.txt
 
 %files compiler
 %defattr(-, root, root, -)
 %{_bindir}/protoc
 %{_libdir}/libprotoc.so.*
-%doc COPYING.txt README.txt
 
 %files devel
 %defattr(-, root, root, -)
@@ -152,7 +132,8 @@ install -p -m 644 -D editors/proto.vim %{buildroot}%{_datadir}/vim/vimfiles/synt
 %{_libdir}/libprotobuf.so
 %{_libdir}/libprotoc.so
 %{_libdir}/pkgconfig/protobuf.pc
-%doc examples/add_person.cc examples/addressbook.proto examples/list_people.cc examples/Makefile examples/README.txt
+%doc CHANGES.txt CONTRIBUTORS.txt README.md
+%doc examples/add_person.cc examples/addressbook.proto examples/list_people.cc examples/Makefile examples/README.md
 
 %files static
 %defattr(-, root, root, -)
@@ -171,9 +152,4 @@ install -p -m 644 -D editors/proto.vim %{buildroot}%{_datadir}/vim/vimfiles/synt
 %files lite-static
 %defattr(-, root, root, -)
 %{_libdir}/libprotobuf-lite.a
-
-%files vim
-%defattr(-, root, root, -)
-%{_datadir}/vim/vimfiles/ftdetect/proto.vim
-%{_datadir}/vim/vimfiles/syntax/proto.vim
 
