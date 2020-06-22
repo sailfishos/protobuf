@@ -1,6 +1,6 @@
 Summary:        Protocol Buffers - Google's data interchange format
 Name:           protobuf
-Version:        3.10.1
+Version:        3.12.3
 Release:        1
 License:        BSD
 URL:            https://github.com/protocolbuffers/protobuf
@@ -98,8 +98,7 @@ mv CONTRIBUTORS.txt.utf8 CONTRIBUTORS.txt
 export PTHREAD_LIBS="-lpthread"
 ./autogen.sh
 %configure
-
-make %{?_smp_mflags}
+%make_build
 
 %install
 rm -rf %{buildroot}
@@ -133,7 +132,6 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 %{_libdir}/libprotoc.so
 %{_libdir}/pkgconfig/protobuf.pc
 %doc CHANGES.txt CONTRIBUTORS.txt README.md
-%doc examples/add_person.cc examples/addressbook.proto examples/list_people.cc examples/Makefile examples/README.md
 
 %files static
 %defattr(-, root, root, -)
