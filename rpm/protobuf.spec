@@ -1,6 +1,6 @@
 Summary:        Protocol Buffers - Google's data interchange format
 Name:           protobuf
-Version:        3.12.3
+Version:        3.13.0
 Release:        1
 License:        BSD
 URL:            https://github.com/protocolbuffers/protobuf
@@ -9,10 +9,8 @@ Group:          Development/Libraries
 
 BuildRequires:  autoconf
 BuildRequires:  automake
-BuildRequires:  gcc-c++
 BuildRequires:  libtool
-BuildRequires:  pkgconfig
-BuildRequires:  zlib-devel
+BuildRequires:  pkgconfig(zlib)
 
 %description
 Protocol Buffers are a way of encoding structured data in an efficient
@@ -40,7 +38,6 @@ Summary:        Protocol Buffers C++ headers and libraries
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-compiler = %{version}-%{release}
 Requires:       zlib-devel
-Requires:       pkgconfig
 
 %description devel
 This package contains Protocol Buffers compiler for all languages and
@@ -101,7 +98,6 @@ export PTHREAD_LIBS="-lpthread"
 %make_build
 
 %install
-rm -rf %{buildroot}
 make %{?_smp_mflags} install DESTDIR=%{buildroot} STRIPBINARIES=no INSTALL="%{__install} -p" CPPROG="cp -p"
 find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 
@@ -126,12 +122,12 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 
 %files devel
 %defattr(-, root, root, -)
+%doc CHANGES.txt CONTRIBUTORS.txt README.md
 %dir %{_includedir}/google
 %{_includedir}/google/protobuf/
 %{_libdir}/libprotobuf.so
 %{_libdir}/libprotoc.so
 %{_libdir}/pkgconfig/protobuf.pc
-%doc CHANGES.txt CONTRIBUTORS.txt README.md
 
 %files static
 %defattr(-, root, root, -)
@@ -150,4 +146,3 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 %files lite-static
 %defattr(-, root, root, -)
 %{_libdir}/libprotobuf-lite.a
-
