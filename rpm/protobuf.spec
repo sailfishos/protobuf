@@ -135,6 +135,7 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 
 %files lite
 %defattr(-, root, root, -)
+%license LICENSE
 %{_libdir}/libprotobuf-lite.so.*
 
 %files lite-devel
