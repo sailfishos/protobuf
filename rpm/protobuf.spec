@@ -25,6 +25,7 @@ Provides:       %{name} = %{protobuf_cpp_ver}
 
 BuildRequires:  cmake
 BuildRequires:  libtool
+BuildRequires:  ninja
 BuildRequires:  pkgconfig(zlib)
 # FIXME: use pkgconfig
 # We want >= 20230125.3, but the .pc files only specify the major version:
