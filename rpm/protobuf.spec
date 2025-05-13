@@ -7,14 +7,14 @@
 # independently of other languages.
 # The minor and patch versions, however, remain coupled
 
-%global protobuf_version 25.1
+%global protobuf_version 30.2
 %global protobuf_cpp_maj 4
 %global protobuf_cpp_ver %{protobuf_cpp_maj}.%{protobuf_version}
 
 Summary:        Protocol Buffers - Google's data interchange format
 Name:           protobuf
 # NOTE: Remember to change the macro above as well!
-Version:        25.1
+Version:        30.2
 Release:        1
 License:        BSD
 URL:            https://github.com/protocolbuffers/protobuf
@@ -61,6 +61,7 @@ languages
 Summary:        Protocol Buffers C++ headers and libraries
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-compiler = %{protobuf_version}
+Requires:       libutf8_range = %{protobuf_version}
 Requires:       zlib-devel
 # Handle legacy versioning scheme up to and including 3.18.x:
 Provides:       %{name}-devel = %{protobuf_cpp_ver}
@@ -96,6 +97,14 @@ The "optimize_for = LITE_RUNTIME" option causes the compiler to generate code
 which only depends libprotobuf-lite, which is much smaller than libprotobuf but
 lacks descriptors, reflection, and some other features.
 
+%package -n libutf8_range
+Summary:        UTF-8 validation libraries from Protobuf
+Provides:       libutf8_range = %{protobuf_version}
+
+%description -n libutf8_range
+UTF-8 string validation library with optional SIMD acceleration (armv8a NEON,
+SSE4 and AVX2).
+
 %prep
 %autosetup -n %{name}-%{version}/%{name}
 chmod 644 examples/*
@@ -104,15 +113,17 @@ chmod 644 examples/*
 iconv -f iso8859-1 -t utf-8 CONTRIBUTORS.txt > CONTRIBUTORS.txt.utf8
 mv CONTRIBUTORS.txt.utf8 CONTRIBUTORS.txt
 export PTHREAD_LIBS="-lpthread"
-%cmake \
+%cmake -G Ninja \
     -Dprotobuf_BUILD_TESTS=OFF \
     -Dprotobuf_ABSL_PROVIDER="package" \
-    .
+    -DCMAKE_CXX_STANDARD:STRING=17
 
-%make_build
+%ninja_build
+#make_build
 
 %install
-make %{?_smp_mflags} install DESTDIR=%{buildroot} STRIPBINARIES=no INSTALL="%{__install} -p" CPPROG="cp -p"
+%ninja_install
+#make %{?_smp_mflags} install DESTDIR=%{buildroot} STRIPBINARIES=no INSTALL="%{__install} -p" CPPROG="cp -p"
 find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 
 %post -p /sbin/ldconfig
@@ -121,44 +132,47 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
 %post lite -p /sbin/ldconfig
 %postun lite -p /sbin/ldconfig
 
+
+
 %post compiler -p /sbin/ldconfig
 %postun compiler -p /sbin/ldconfig
 
 %files
-%defattr(-, root, root, -)
 %license LICENSE
 %{_libdir}/libprotobuf.so.*
 
 %files compiler
-%defattr(-, root, root, -)
 %{_bindir}/protoc*
 %{_libdir}/libprotoc.so.*
 
 %files devel
-%defattr(-, root, root, -)
 %doc CONTRIBUTORS.txt README.md
 %dir %{_includedir}/google
 %{_includedir}/google/protobuf/
+%dir %{_includedir}/upb
+%{_includedir}/upb/
 %{_libdir}/libprotobuf.so
 %{_libdir}/libprotoc.so
+%{_libdir}/libupb.a
+%{_libdir}/libutf8_range.so
+%{_libdir}/libutf8_validity.so
 %{_libdir}/pkgconfig/protobuf.pc
 %{_libdir}/cmake/%{name}/
-# UTF8_range does not build shared libs yet, see https://github.com/protocolbuffers/protobuf/issues/14958
-%{_libdir}/libutf8_range.a
-%{_libdir}/libutf8_validity.a
 %{_includedir}/utf8_range.h
 %{_includedir}/utf8_validity.h
+%{_libdir}/pkgconfig/upb.pc
 %{_libdir}/pkgconfig/utf8_range.pc
 %{_libdir}/cmake/utf8_range/
-%exclude %{_includedir}/java/core/src/main/java/com/google/protobuf/java_features.proto
 
 %files lite
-%defattr(-, root, root, -)
 %license LICENSE
 %{_libdir}/libprotobuf-lite.so.*
 
 %files lite-devel
-%defattr(-, root, root, -)
 %{_libdir}/libprotobuf-lite.so
 %{_libdir}/pkgconfig/protobuf-lite.pc
 
+%files -n libutf8_range
+%license LICENSE
+%{_libdir}/libutf8_range.so.*
+%{_libdir}/libutf8_validity.so.*
